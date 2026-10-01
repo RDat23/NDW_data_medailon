@@ -1,0 +1,23 @@
+# Lokale configuratie en geheimen
+.env
+
+# Lokale bronbestanden en opslagdata
+data/exports/*
+!data/exports/.gitkeep
+data/minio/*
+!data/minio/.gitkeep
+data/postgres/*
+!data/postgres/.gitkeep
+
+# Python en dbt
+.venv/
+__pycache__/
+*.py[cod]
+target/
+dbt_packages/
+logs/
+
+# Besturingssysteem en editor
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,15 @@
+name: ndw_data_medallion
+version: 1.0.0
+config-version: 2
+
+profile: ndw_data_medallion
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  ndw_data_medallion:
+    +materialized: view
