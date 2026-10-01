@@ -13,3 +13,10 @@ clean-targets: ["target", "dbt_packages"]
 models:
   ndw_data_medallion:
     +materialized: view
+    staging:
+      +schema: silver
+    silver:
+      +schema: silver
+    gold:
+      +schema: gold
+      +tags: [lightdash]

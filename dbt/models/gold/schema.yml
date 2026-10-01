@@ -1,0 +1,164 @@
+version: 2
+
+models:
+  - name: fct_ndw_verkeer_uur
+    description: >
+      Actuele, gededupliceerde uurmetingen. Bevat alle voertuigcategorieën;
+      is_totaalverkeer markeert de aanbevolen anyVehicle-reeks voor totalen.
+    config:
+      meta:
+        label: Verkeer per uur
+        group_label: NDW Gold
+        metrics:
+          aantal_uurrecords:
+            type: count_distinct
+            sql: ${TABLE}.gold_record_id
+            label: Aantal uurrecords
+            format: '#,##0'
+    columns:
+      - name: gold_record_id
+        description: Sleutel op de natuurlijke meetgrain, onafhankelijk van de leveringsbatch.
+        data_tests:
+          - not_null
+          - unique
+      - name: id_meetlocatie
+        data_tests:
+          - not_null
+      - name: ndw_index
+        data_tests:
+          - not_null
+      - name: start_meetperiode
+        data_tests:
+          - not_null
+      - name: eind_meetperiode
+        data_tests:
+          - not_null
+      - name: is_totaalverkeer
+        data_tests:
+          - not_null
+      - name: kwaliteitsstatus
+        data_tests:
+          - not_null
+
+  - name: agg_ndw_verkeer_dag_totaal
+    description: >
+      Dag-KPI's voor anyVehicle per meetlocatie, NDW-index en rijstrook. Alleen
+      volledige uurvakken tellen mee in intensiteit- en snelheidsaggregaties.
+    config:
+      meta:
+        label: Dagverkeer totaal
+        group_label: NDW Gold
+        metrics:
+          totale_uurintensiteit:
+            type: sum
+            sql: ${TABLE}.som_uurintensiteit
+            label: Totale uurintensiteit
+            description: Som van bruikbare intensiteiten uit volledige uurvakken.
+            format: '#,##0'
+          snelheid_teller:
+            type: sum
+            sql: ${TABLE}.snelheid_gewogen_teller
+            hidden: true
+          snelheid_gewicht:
+            type: sum
+            sql: ${TABLE}.snelheid_gewicht
+            hidden: true
+          gewogen_snelheid:
+            type: number
+            sql: ${snelheid_teller} / NULLIF(${snelheid_gewicht}, 0)
+            label: Gewogen gemiddelde snelheid
+            format: '#,##0.0'
+          intensiteit_bruikbare_uren:
+            type: sum
+            sql: ${TABLE}.aantal_uurvakken_intensiteit_bruikbaar
+            hidden: true
+          snelheid_bruikbare_uren:
+            type: sum
+            sql: ${TABLE}.aantal_uurvakken_snelheid_bruikbaar
+            hidden: true
+          volledige_uren:
+            type: sum
+            sql: ${TABLE}.aantal_volledige_uurvakken
+            hidden: true
+          dekking_intensiteit:
+            type: number
+            sql: 100.0 * ${intensiteit_bruikbare_uren} / NULLIF(${volledige_uren}, 0)
+            label: Dekking intensiteit (%)
+            format: '#,##0.0'
+          dekking_snelheid:
+            type: number
+            sql: 100.0 * ${snelheid_bruikbare_uren} / NULLIF(${volledige_uren}, 0)
+            label: Dekking snelheid (%)
+            format: '#,##0.0'
+    columns:
+      - name: meetdatum
+        data_tests: [not_null]
+      - name: id_meetlocatie
+        data_tests: [not_null]
+      - name: dekking_intensiteit_pct
+        description: Percentage bruikbare intensiteitsmetingen binnen geleverde volledige uurvakken.
+      - name: dekking_snelheid_pct
+        description: Percentage bruikbare snelheidsmetingen binnen geleverde volledige uurvakken.
+
+  - name: agg_ndw_verkeer_dag_voertuigcategorie
+    description: >
+      Dag-KPI's per afzonderlijke voertuigcategorie. Categorieën kunnen
+      overlappen en mogen daarom niet onderling worden opgeteld.
+    config:
+      meta:
+        label: Dagverkeer per voertuigcategorie
+        group_label: NDW Gold
+        metrics:
+          uurintensiteit:
+            type: sum
+            sql: ${TABLE}.som_uurintensiteit
+            label: Uurintensiteit categorie
+            format: '#,##0'
+          snelheid_teller:
+            type: sum
+            sql: ${TABLE}.snelheid_gewogen_teller
+            hidden: true
+          snelheid_gewicht:
+            type: sum
+            sql: ${TABLE}.snelheid_gewicht
+            hidden: true
+          gewogen_snelheid:
+            type: number
+            sql: ${snelheid_teller} / NULLIF(${snelheid_gewicht}, 0)
+            label: Gewogen snelheid categorie
+            format: '#,##0.0'
+    columns:
+      - name: meetdatum
+        data_tests: [not_null]
+      - name: id_meetlocatie
+        data_tests: [not_null]
+      - name: voertuigcategorie
+        data_tests: [not_null]
+
+  - name: agg_ndw_datakwaliteit_dag
+    description: Dagelijkse kwaliteit en dekking voor de anyVehicle-reeks.
+    config:
+      meta:
+        label: Datakwaliteit per dag
+        group_label: NDW Gold
+        metrics:
+          geleverde_tijdvakken:
+            type: sum
+            sql: ${TABLE}.aantal_geleverde_tijdvakken
+            label: Geleverde tijdvakken
+            format: '#,##0'
+          datafouten:
+            type: sum
+            sql: ${TABLE}.aantal_datafouten
+            label: Datafouten
+            format: '#,##0'
+          technische_uitsluitingen:
+            type: sum
+            sql: ${TABLE}.aantal_technische_uitsluitingen
+            label: Technische uitsluitingen
+            format: '#,##0'
+    columns:
+      - name: meetdatum
+        data_tests:
+          - not_null
+          - unique

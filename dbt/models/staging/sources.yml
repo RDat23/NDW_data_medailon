@@ -1,0 +1,41 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: Brongetrouwe NDW-records en metadata van ingeladen exports.
+    schema: bronze
+    tables:
+      - name: ingestion_batches
+        description: Registratie, status en lineage van iedere NDW-export.
+        columns:
+          - name: batch_id
+            data_tests:
+              - not_null
+              - unique
+          - name: bron_object_key
+            data_tests:
+              - not_null
+              - unique
+          - name: status
+            data_tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: [registered, loading, loaded, failed]
+
+      - name: ndw_intensiteit_snelheid_raw
+        description: Iedere CSV-rij als ongewijzigde JSONB-payload.
+        columns:
+          - name: batch_id
+            data_tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('bronze', 'ingestion_batches')
+                    field: batch_id
+          - name: source_row_number
+            data_tests:
+              - not_null
+          - name: source_payload
+            data_tests:
+              - not_null

@@ -1,0 +1,70 @@
+version: 2
+
+models:
+  - name: stg_ndw_intensiteit_snelheid
+    description: Getypeerde, één-op-één representatie van geladen Bronze-records.
+    columns:
+      - name: bronze_record_id
+        description: Technische sleutel op basis van batch-id en bronregelnummer.
+      - name: gem_intensiteit_raw
+        description: Bronwaarde; kan de NDW-sentinel -1 bevatten.
+      - name: gem_intensiteit
+        description: Analysewaarde; lege en negatieve bronwaarden worden NULL.
+      - name: gem_snelheid_raw
+        description: Bronwaarde; kan de NDW-sentinel -1 bevatten.
+      - name: gem_snelheid
+        description: Analysewaarde; lege en negatieve bronwaarden worden NULL.
+
+  - name: silver_ndw_meetresultaten
+    description: Incrementele Silver-feitentabel met getypeerde NDW-meetresultaten en kwaliteitskenmerken.
+    columns:
+      - name: bronze_record_id
+        data_tests:
+          - not_null
+          - unique
+      - name: batch_id
+        data_tests:
+          - not_null
+      - name: source_row_number
+        data_tests:
+          - not_null
+      - name: id_meetlocatie
+        data_tests:
+          - not_null
+      - name: start_meetperiode
+        data_tests:
+          - not_null
+      - name: eind_meetperiode
+        data_tests:
+          - not_null
+      - name: kwaliteitsstatus
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - bruikbaar
+                  - datafout
+                  - technisch_uitgesloten
+                  - geen_meting
+                  - gedeeltelijke_meting
+
+  - name: silver_ndw_meetlocaties
+    description: Overzicht van het beschikbare meetbereik per meetlocatie en NDW-index.
+    columns:
+      - name: id_meetlocatie
+        data_tests:
+          - not_null
+      - name: ndw_index
+        data_tests:
+          - not_null
+
+  - name: silver_ndw_datakwaliteit
+    description: Dagelijkse aantallen per afgeleide kwaliteitsstatus.
+    columns:
+      - name: meetdatum
+        data_tests:
+          - not_null
+      - name: kwaliteitsstatus
+        data_tests:
+          - not_null

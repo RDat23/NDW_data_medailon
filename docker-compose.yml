@@ -47,6 +47,84 @@ services:
     networks:
       - ndw-network
 
+  lightdash-db:
+    image: pgvector/pgvector:pg15
+    container_name: ndw-lightdash-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${LIGHTDASH_DB_NAME:-lightdash}
+      POSTGRES_USER: ${LIGHTDASH_DB_USER:-lightdash}
+      POSTGRES_PASSWORD: ${LIGHTDASH_DB_PASSWORD:-lightdash_local_only_change_me}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./data/lightdash:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - ndw-network
+
+  lightdash:
+    image: lightdash/lightdash:${LIGHTDASH_VERSION:-2.402.0}
+    platform: linux/amd64
+    container_name: ndw-lightdash
+    restart: unless-stopped
+    depends_on:
+      lightdash-db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    environment:
+      PGHOST: lightdash-db
+      PGPORT: 5432
+      PGUSER: ${LIGHTDASH_DB_USER:-lightdash}
+      PGPASSWORD: ${LIGHTDASH_DB_PASSWORD:-lightdash_local_only_change_me}
+      PGDATABASE: ${LIGHTDASH_DB_NAME:-lightdash}
+      LIGHTDASH_SECRET: ${LIGHTDASH_SECRET:-local-development-secret-change-before-sharing-2026}
+      SITE_URL: http://localhost:${LIGHTDASH_PORT:-8080}
+      PORT: 8080
+      SECURE_COOKIES: "false"
+      SCHEDULER_ENABLED: "false"
+      LIGHTDASH_QUERY_TIMEZONE: Europe/Amsterdam
+      LIGHTDASH_QUERY_MAX_LIMIT: 5000
+      S3_ENDPOINT: http://minio:9000
+      S3_REGION: us-east-1
+      S3_BUCKET: ${LIGHTDASH_S3_BUCKET:-lightdash}
+      S3_ACCESS_KEY: ${LIGHTDASH_S3_USER:-lightdash_storage}
+      S3_SECRET_KEY: ${LIGHTDASH_S3_PASSWORD:-lightdash_local_storage_change_me}
+      S3_FORCE_PATH_STYLE: "true"
+      DBT_HOST: postgres
+      DBT_PORT: 5432
+      DBT_DATABASE: ${POSTGRES_DB}
+      DBT_SCHEMA: gold
+      DBT_USER: ${LIGHTDASH_WAREHOUSE_USER:-lightdash_reader}
+      DBT_PASSWORD: ${LIGHTDASH_WAREHOUSE_PASSWORD:-lightdash_local_reader_change_me}
+    ports:
+      - "${LIGHTDASH_PORT:-8080}:8080"
+    volumes:
+      - ./dbt:/usr/app/dbt:ro
+    tmpfs:
+      - /usr/app/dbt/logs
+      - /usr/app/dbt/target
+      - /usr/app/dbt/dbt_packages
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://localhost:8080/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - ndw-network
+
 networks:
   ndw-network:
     name: ndw-network

@@ -23,6 +23,7 @@
 - [x] Maak een `docker-compose.yml` aan.
 - [x] Voeg een MinIO-container toe.
 - [x] Voeg een PostgreSQL-container toe.
+- [x] Voeg Lightdash en een aparte Lightdash-applicatiedatabase toe.
 - [x] Gebruik permanente lokale opslag voor MinIO en PostgreSQL.
 - [x] Plaats beide services op hetzelfde interne Docker-netwerk.
 - [x] Stel healthchecks in.
@@ -55,8 +56,10 @@
     beheerrechten.
   - `ndw_transform`: serviceaccount voor een toekomstig ingestie- of
     validatiescript; alleen lezen en lijsten in `ndw-data/bronze/*`.
-  - dbt en Lightdash krijgen geen MinIO-account: zij gebruiken uitsluitend
-    PostgreSQL nadat de Bronze-ingestie is uitgevoerd.
+  - dbt krijgt geen MinIO-account: transformaties gebruiken PostgreSQL nadat de
+    Bronze-ingestie is uitgevoerd.
+  - Lightdash gebruikt een eigen beperkte servicegebruiker voor de interne
+    bucket `lightdash`; deze heeft geen toegang tot `ndw-data`.
 - [x] Maak `ndw_ingest` en `ndw_transform` aan met deze beperkte policies zodra
   het ingestiescript wordt gebouwd.
 - [x] Test uploaden en downloaden van een klein testbestand.
@@ -88,9 +91,9 @@
   - aggregatieperiode: uur;
   - aggregatievariant: ongewogen;
   - meetcompleetheid: niet meegenomen.
-- [ ] Bereken een checksum van het originele bestand.
-- [ ] Upload het originele bestand ongewijzigd naar de MinIO-Bronze-bucket.
-- [ ] Registreer de batch in PostgreSQL.
+- [x] Bereken een checksum van het originele bestand.
+- [x] Upload het originele bestand ongewijzigd naar de MinIO-Bronze-bucket.
+- [x] Registreer de batch in PostgreSQL.
 
 ## 6. Bronze-ingestie bouwen
 
@@ -106,44 +109,45 @@
 
 - [x] Maak een dbt-project aan met de PostgreSQL-adapter.
 - [x] Configureer verbinding met PostgreSQL.
-- [ ] Richt sources in voor de Bronze-tabellen.
-- [ ] Maak staging-modellen voor gestandaardiseerde namen en datatypes.
-- [ ] Maak Silver-modellen voor:
-  - meetresultaten;
-  - meetlocaties en locatiekenmerken;
-  - referentiewaarden;
-  - datakwaliteit.
-- [ ] Voeg model- en kolombeschrijvingen toe.
+- [x] Richt sources in voor de Bronze-tabellen.
+- [x] Maak staging-modellen voor gestandaardiseerde namen en datatypes.
+- [x] Maak Silver-modellen voor meetresultaten.
+- [x] Maak een Silver-overzicht voor meetlocaties en beschikbare kenmerken.
+- [ ] Maak een Silver-model voor referentiewaarden zodra deze in een export voorkomen.
+- [x] Maak een Silver-model voor datakwaliteit.
+- [x] Voeg model- en kolombeschrijvingen toe.
 
 ## 8. dbt-tests en datakwaliteit
 
-- [ ] Test verplichte velden zoals `id_meetlocatie` en meetperiode.
-- [ ] Test dat starttijd vóór eindtijd ligt.
+- [x] Test verplichte velden zoals `id_meetlocatie` en meetperiode.
+- [x] Test dat starttijd vóór eindtijd ligt.
 - [ ] Test de voorlopige grain:
   `id_meetlocatie`, meetperiode, richting, rijbaan en voertuigcategorie.
-- [ ] Test dat numerieke waarden correct worden ingelezen.
+- [x] Test dat numerieke waarden correct worden ingelezen.
 - [ ] Test geldige grenzen voor latitude en longitude.
 - [ ] Test negatieve waarden in gemiddelden, aantallen, minuten en spreiding.
-- [ ] Test kwaliteitsindicatoren en foutvelden.
+- [x] Test de afgeleide kwaliteitsstatus en foutvelden.
 - [ ] Onderzoek dubbele records; verwijder ze niet automatisch.
-- [ ] Maak een datakwaliteitsrapport voor ontbrekende en incomplete waarnemingen.
+- [x] Maak een datakwaliteitsmodel voor ontbrekende, onbruikbare en uitgesloten waarnemingen.
 
 ## 9. Gold-laag bouwen
 
-- [ ] Maak een Gold-model voor gemiddelde intensiteit per uur en locatie.
-- [ ] Maak een Gold-model voor gemiddelde snelheid per uur en locatie.
-- [ ] Maak een Gold-model voor gewogen gemiddelde snelheid.
-- [ ] Maak een Gold-model voor spreiding en datakwaliteit.
-- [ ] Voeg afgeleide velden toe zoals meetdatum, meetuur en weekdag.
-- [ ] Documenteer dat de bronaggregatie ongewogen is.
-- [ ] Valideer Gold-uitkomsten met steekproeven uit de CSV.
+- [x] Maak een Gold-model voor gemiddelde intensiteit per uur en locatie.
+- [x] Maak een Gold-model voor gemiddelde snelheid per uur en locatie.
+- [x] Maak een Gold-model voor gewogen gemiddelde snelheid.
+- [x] Maak een Gold-model voor datakwaliteit.
+- [ ] Voeg spreidings-KPI's toe zodra de bron deze velden levert.
+- [x] Voeg afgeleide velden toe zoals meetdatum, meetuur en weekdag.
+- [x] Documenteer dat de bronaggregatie ongewogen is en hoe dag-KPI's worden opgebouwd.
+- [x] Valideer Gold-uitkomsten met dbt-tests en tellingen tegen Silver.
 
 ## 10. Lightdash toevoegen
 
-- [ ] Voeg Lightdash toe aan Docker Compose zodra de Gold-tabellen stabiel zijn.
-- [ ] Configureer de PostgreSQL-verbinding.
-- [ ] Koppel Lightdash aan het Gold-schema.
-- [ ] Definieer metrics en dimensies in de dbt-modellen.
+- [x] Voeg Lightdash toe aan Docker Compose zodra de Gold-tabellen stabiel zijn.
+- [x] Configureer de PostgreSQL-verbinding met een read-only account.
+- [x] Koppel de Lightdash-configuratie aan het Gold-schema.
+- [x] Definieer metrics en dimensies in de dbt-modellen.
+- [ ] Registreer het eerste lokale beheeraccount en publiceer het dbt-project.
 - [ ] Maak een dashboard met:
   - intensiteitstrends;
   - snelheidstrends;

@@ -8,6 +8,8 @@ data/minio/*
 !data/minio/.gitkeep
 data/postgres/*
 !data/postgres/.gitkeep
+data/lightdash/*
+!data/lightdash/.gitkeep
 
 # Python en dbt
 .venv/
@@ -16,6 +18,17 @@ __pycache__/
 target/
 dbt_packages/
 logs/
+
+# Lege mountpoints voor vluchtige dbt-output in de Lightdash-container
+!dbt/logs/
+dbt/logs/*
+!dbt/logs/.gitkeep
+!dbt/target/
+dbt/target/*
+!dbt/target/.gitkeep
+!dbt/dbt_packages/
+dbt/dbt_packages/*
+!dbt/dbt_packages/.gitkeep
 
 # Besturingssysteem en editor
 .DS_Store
