@@ -9,8 +9,10 @@ set +a
 
 bucket="${LIGHTDASH_S3_BUCKET:-lightdash}"
 storage_user="${LIGHTDASH_S3_USER:-lightdash_storage}"
-storage_password="${LIGHTDASH_S3_PASSWORD:-lightdash_local_storage_change_me}"
 policy_name="lightdash-storage"
+
+: "${LIGHTDASH_S3_PASSWORD:?LIGHTDASH_S3_PASSWORD is verplicht}"
+storage_password="$LIGHTDASH_S3_PASSWORD"
 
 if [[ "$bucket" != "lightdash" ]]; then
   echo "LIGHTDASH_S3_BUCKET moet 'lightdash' zijn; de policy is tot die bucket beperkt." >&2

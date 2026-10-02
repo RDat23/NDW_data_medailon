@@ -98,7 +98,7 @@ De eerste export is aangevraagd met de volgende metadata:
 
 | Eigenschap | Waarde |
 |---|---|
-| Aanvraag-ID | `00000000-0000-4000-8000-000000000001` |
+| Aanvraag-ID | `00000000-0000-4000-8000-000000000001` (voorbeeld) |
 | Soort aanvraag | Actuele Verkeersgegevens |
 | Periodieke aanvraag | Nee |
 | Naam | `intensiteit-snelheid-export` |

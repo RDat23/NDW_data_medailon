@@ -8,10 +8,14 @@ set -a
 set +a
 
 reader_user="${LIGHTDASH_WAREHOUSE_USER:-lightdash_reader}"
-reader_password="${LIGHTDASH_WAREHOUSE_PASSWORD:-lightdash_local_reader_change_me}"
 app_db_user="${LIGHTDASH_DB_USER:-lightdash}"
-app_db_password="${LIGHTDASH_DB_PASSWORD:-lightdash_local_only_change_me}"
 app_db_name="${LIGHTDASH_DB_NAME:-lightdash}"
+
+: "${LIGHTDASH_WAREHOUSE_PASSWORD:?LIGHTDASH_WAREHOUSE_PASSWORD is verplicht}"
+: "${LIGHTDASH_DB_PASSWORD:?LIGHTDASH_DB_PASSWORD is verplicht}"
+
+reader_password="$LIGHTDASH_WAREHOUSE_PASSWORD"
+app_db_password="$LIGHTDASH_DB_PASSWORD"
 
 if [[ ! "$reader_user" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
   echo "Ongeldige LIGHTDASH_WAREHOUSE_USER: $reader_user" >&2

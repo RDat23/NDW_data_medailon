@@ -1,6 +1,9 @@
 # Lokale configuratie en geheimen
 .env
-.env.example
+
+# Interne architectuurdocumentatie
+DataFryslan FRLDSFRL100LidruimteFryslan-X.svg
+DataFryslan FRLDSFRL100LidruimteFryslan-X.png
 
 # Lokale bronbestanden en opslagdata
 data/exports/*
@@ -16,6 +19,7 @@ data/lightdash/*
 .venv/
 __pycache__/
 *.py[cod]
+dbt/.user.yml
 target/
 dbt_packages/
 logs/
