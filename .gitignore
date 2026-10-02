@@ -1,5 +1,6 @@
 # Lokale configuratie en geheimen
 .env
+.env.example
 
 # Lokale bronbestanden en opslagdata
 data/exports/*
